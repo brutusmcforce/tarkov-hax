@@ -1,0 +1,1 @@
+injector64.exe --dll "D:\Projekt\tarkov-hax\TarkovHax\bin\Debug\TarkovHax.dll" --target EscapeFromTarkov.exe --namespace TarkovHax --class TarkovHaxBehaviour --method Load
