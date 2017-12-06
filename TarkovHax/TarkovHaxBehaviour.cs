@@ -45,7 +45,7 @@ namespace TarkovHax
             }
             if (Input.GetKeyDown(KeyCode.Insert))
             {
-                this._isESPMenuActive = !this._isESPMenuActive;
+                _isESPMenuActive = !_isESPMenuActive;
             }
             if (Input.GetKeyDown(KeyCode.Keypad0))
             {
@@ -109,7 +109,7 @@ namespace TarkovHax
 
         private void OnGUI()
         {
-            if (this._isESPMenuActive)
+            if (_isESPMenuActive)
             {
                 DrawESPMenu();
             }
@@ -117,35 +117,35 @@ namespace TarkovHax
             GUI.color = Color.red;
             GUI.Label(new Rect(10f, 10f, 100f, 50f), "tarkov h4x");
 
-            if (Time.time >= this._playerNextUpdateTime)
+            if (Time.time >= _playerNextUpdateTime)
             {
-                this._playerObjects = FindObjectsOfType(typeof(Player));
-                this._playerNextUpdateTime = Time.time + 0.5f;
+                _playerObjects = FindObjectsOfType(typeof(Player));
+                _playerNextUpdateTime = Time.time + 0.5f;
             }
 
-            if (this._showLootESP && Time.time >= this._lootNextUpdateTime)
+            if (_showLootESP && Time.time >= _lootNextUpdateTime)
             {
-                this._lootableObjects = FindObjectsOfType(typeof(LootItem));
-                this._lootNextUpdateTime = Time.time + 0.01f;
+                _lootableObjects = FindObjectsOfType(typeof(LootItem));
+                _lootNextUpdateTime = Time.time + 0.01f;
             }
 
-            if (this._showLootableContainersESP && Time.time >= this._lootContainerNextUpdateTime)
+            if (_showLootableContainersESP && Time.time >= _lootContainerNextUpdateTime)
             {
-                this._lootableContainerObjects = FindObjectsOfType(typeof(LootableContainer));
-                this._lootContainerNextUpdateTime = Time.time + 0.01f;
+                _lootableContainerObjects = FindObjectsOfType(typeof(LootableContainer));
+                _lootContainerNextUpdateTime = Time.time + 0.01f;
             }
 
-            if (this._showLootESP)
+            if (_showLootESP)
             {
                 DrawLoot();
             }
 
-            if (this._showLootableContainersESP)
+            if (_showLootableContainersESP)
             {
                 DrawLootableContainers();
             }
 
-            if (this._showPlayersESP)
+            if (_showPlayersESP)
             {
                 DrawPlayers();
             }
@@ -153,7 +153,7 @@ namespace TarkovHax
 
         private void DrawLoot()
         {
-            foreach (LootItem lootItem in this._lootableObjects)
+            foreach (LootItem lootItem in _lootableObjects)
             {
                 float distanceToObject = Vector3.Distance(Camera.main.transform.position, lootItem.transform.position);
                 var viewTransform = new Vector3(
@@ -171,7 +171,7 @@ namespace TarkovHax
 
         private void DrawLootableContainers()
         {
-            foreach (LootableContainer lootableContainer in this._lootableContainerObjects)
+            foreach (LootableContainer lootableContainer in _lootableContainerObjects)
             {
                 float distanceToObject = Vector3.Distance(Camera.main.transform.position, lootableContainer.transform.position);
                 var viewTransform = new Vector3(
@@ -189,7 +189,7 @@ namespace TarkovHax
 
         private void DrawPlayers()
         {
-            foreach (Player player in this._playerObjects)
+            foreach (Player player in _playerObjects)
             {
                 var playerBoundingVector = new Vector3(
                     Camera.main.WorldToScreenPoint(player.Transform.position).x,
@@ -238,9 +238,9 @@ namespace TarkovHax
             GUI.color = Color.white;
             GUI.Label(new Rect(180f, 110f, 50f, 20f), "ESP");
 
-            this._showPlayersESP = GUI.Toggle(new Rect(110f, 140f, 120f, 20f), this._showPlayersESP, "  Players");
-            this._showLootESP = GUI.Toggle(new Rect(110f, 160f, 120f, 20f), this._showLootESP, "  Loot");
-            this._showLootableContainersESP = GUI.Toggle(new Rect(110f, 180f, 120f, 20f), this._showLootableContainersESP, "  Lootables");
+            _showPlayersESP = GUI.Toggle(new Rect(110f, 140f, 120f, 20f), _showPlayersESP, "  Players");
+            _showLootESP = GUI.Toggle(new Rect(110f, 160f, 120f, 20f), _showLootESP, "  Loot");
+            _showLootableContainersESP = GUI.Toggle(new Rect(110f, 180f, 120f, 20f), _showLootableContainersESP, "  Lootables");
         }
 
         private double GetDistance(double x1, double y1, double x2, double y2)
