@@ -42,10 +42,10 @@ namespace TarkovHax
         public static void DrawLineStretched(Vector2 lineStart, Vector2 lineEnd, Texture2D texture, int thickness)
         {
             var vector = lineEnd - lineStart;
-            float num = 57.29578f * Mathf.Atan(vector.y / vector.x);
+            float pivot = 57.29578f * Mathf.Atan(vector.y / vector.x);
             if (vector.x < 0f)
             {
-                num += 180f;
+                pivot += 180f;
             }
 
             if (thickness < 1)
@@ -55,9 +55,9 @@ namespace TarkovHax
 
             int yOffset = (int)Mathf.Ceil((float)(thickness / 2));
 
-            GUIUtility.RotateAroundPivot(num, lineStart);
+            GUIUtility.RotateAroundPivot(pivot, lineStart);
             GUI.DrawTexture(new Rect(lineStart.x, lineStart.y - (float)yOffset, vector.magnitude, (float)thickness), texture);
-            GUIUtility.RotateAroundPivot(-num, lineStart);
+            GUIUtility.RotateAroundPivot(-pivot, lineStart);
         }
 
         public static void DrawLine(Vector2 lineStart, Vector2 lineEnd, Texture2D texture)

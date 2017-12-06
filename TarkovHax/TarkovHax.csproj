@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GuiHelper.cs" />
+    <Compile Include="Loader.cs" />
     <Compile Include="TarkovHaxBehaviour.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

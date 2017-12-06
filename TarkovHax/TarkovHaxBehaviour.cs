@@ -6,7 +6,7 @@ namespace TarkovHax
 {
     public class TarkovHaxBehaviour : MonoBehaviour
     {
-        public static GameObject GameObjectHolder;
+        public GameObject GameObjectHolder;
 
         private float _playerNextUpdateTime;
         private float _lootNextUpdateTime;
@@ -23,7 +23,7 @@ namespace TarkovHax
 
         private float _maxDrawingDistance = 15000f;
 
-        private static void Load()
+        public void Load()
         {
             GameObjectHolder = new GameObject();
             GameObjectHolder.AddComponent<TarkovHaxBehaviour>();
@@ -31,13 +31,10 @@ namespace TarkovHax
             DontDestroyOnLoad(GameObjectHolder);
         }
 
-        public static void Unload()
+        public void Unload()
         {
-            var component = GameObjectHolder.GetComponent<TarkovHaxBehaviour>();
-            if (component != null)
-            {
-                DestroyImmediate(component, true);
-            }
+            Destroy(GameObjectHolder);
+            Destroy(this);
         }
 
         private void Update()
@@ -58,7 +55,6 @@ namespace TarkovHax
             {
                 ToggleNightVision();
             }
-
             if (Input.GetKeyDown(KeyCode.KeypadPlus))
             {
                 IncreaseFov();
