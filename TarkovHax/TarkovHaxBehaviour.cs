@@ -207,7 +207,7 @@ namespace TarkovHax
                 float boxHeight = Math.Abs(Camera.main.WorldToScreenPoint(player.PlayerBones.Head.position).y - Camera.main.WorldToScreenPoint(player.Transform.position).y) + 10f;
                 float boxWidth = boxHeight * 0.65f;
 
-                if (distanceToObject <= _maxDrawingDistance)
+                if (distanceToObject <= _maxDrawingDistance && playerBoundingVector.z > 0.01)
                 {
                     var uiColor = player.Profile.Health.IsAlive ? Color.red : Color.white;
                     GUI.color = uiColor;
