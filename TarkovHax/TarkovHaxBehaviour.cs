@@ -150,18 +150,18 @@ namespace TarkovHax
             foreach (var lootableContainer in _lootableContainers.Where(lc => lc.name == "weapon_box_cover"))
             {
                 float distanceToObject = Vector3.Distance(Camera.main.transform.position, lootableContainer.transform.position);
-                var viewTransform = new Vector3(
+                var lootableContainerBoundingVector = new Vector3(
                     Camera.main.WorldToScreenPoint(lootableContainer.transform.position).x, 
                     Camera.main.WorldToScreenPoint(lootableContainer.transform.position).y, 
                     Camera.main.WorldToScreenPoint(lootableContainer.transform.position).z);
 
-                if (distanceToObject <= _maxDrawingDistance && viewTransform.z > 0.01)
+                if (distanceToObject <= _maxDrawingDistance && lootableContainerBoundingVector.z > 0.01)
                 {
                     GUI.color = Color.cyan;
                     int distance = (int)distanceToObject;
                     string boxText = $"[x] {distance}m";
 
-                    GUI.Label(new Rect(viewTransform.x - 50f, (float)Screen.height - viewTransform.y, 100f, 50f), boxText);
+                    GUI.Label(new Rect(lootableContainerBoundingVector.x - 50f, (float)Screen.height - lootableContainerBoundingVector.y, 100f, 50f), boxText);
                 }
             }
         }
