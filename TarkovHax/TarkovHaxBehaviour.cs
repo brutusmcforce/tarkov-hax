@@ -1,6 +1,9 @@
 ﻿using System;
-using EFT;
+using System.Collections.Generic;
+using System.Linq;
+
 using UnityEngine;
+using EFT;
 
 namespace TarkovHax
 {
@@ -8,13 +11,13 @@ namespace TarkovHax
     {
         public GameObject GameObjectHolder;
 
-        private UnityEngine.Object[] _playerObjects;
-        private UnityEngine.Object[] _lootableObjects;
-        private UnityEngine.Object[] _lootableContainerObjects;
+        private IEnumerable<Player> _players;
+        private IEnumerable<LootItem> _lootItems;
+        private IEnumerable<LootableContainer> _lootableContainers;
 
-        private float _playerNextUpdateTime;
-        private float _lootNextUpdateTime;
-        private float _lootContainerNextUpdateTime;
+        private float _playersNextUpdateTime;
+        private float _lootItemsNextUpdateTime;
+        private float _lootableContainersNextUpdateTime;
         private float _espUpdateInterval = 1f;
 
         private bool _isESPMenuActive;
@@ -76,10 +79,11 @@ namespace TarkovHax
             Camera.main.fieldOfView -= 1f;
         }
 
+
         private void OpenDoors()
         {
-            var doors = FindObjectsOfType(typeof(Door));
-            foreach (Door door in doors)
+            var doors = FindObjectsOfType<Door>();
+            foreach (var door in doors)
             {
                 if (door.DoorState == WorldInteractiveObject.EDoorState.Locked)
                 {
@@ -118,22 +122,22 @@ namespace TarkovHax
             GUI.color = Color.red;
             GUI.Label(new Rect(10f, 10f, 100f, 50f), "tarkov h4x");
 
-            if (Time.time >= _playerNextUpdateTime)
+            if (_showPlayersESP && Time.time >= _playersNextUpdateTime)
             {
-                _playerObjects = FindObjectsOfType(typeof(Player));
-                _playerNextUpdateTime = Time.time + _espUpdateInterval;
+                _players = FindObjectsOfType<Player>();
+                _playersNextUpdateTime = Time.time + _espUpdateInterval;
             }
 
-            if (_showLootESP && Time.time >= _lootNextUpdateTime)
+            if (_showLootESP && Time.time >= _lootItemsNextUpdateTime)
             {
-                _lootableObjects = FindObjectsOfType(typeof(LootItem));
-                _lootNextUpdateTime = Time.time + _espUpdateInterval;
+                _lootItems = FindObjectsOfType<LootItem>();
+                _lootItemsNextUpdateTime = Time.time + _espUpdateInterval;
             }
 
-            if (_showLootableContainersESP && Time.time >= _lootContainerNextUpdateTime)
+            if (_showLootableContainersESP && Time.time >= _lootableContainersNextUpdateTime)
             {
-                _lootableContainerObjects = FindObjectsOfType(typeof(LootableContainer));
-                _lootContainerNextUpdateTime = Time.time + _espUpdateInterval;
+                _lootableContainers = FindObjectsOfType<LootableContainer>();
+                _lootableContainersNextUpdateTime = Time.time + _espUpdateInterval;
             }
 
             if (_showLootESP)
@@ -154,7 +158,7 @@ namespace TarkovHax
 
         private void DrawLoot()
         {
-            foreach (LootItem lootItem in _lootableObjects)
+            foreach (var lootItem in _lootItems)
             {
                 float distanceToObject = Vector3.Distance(Camera.main.transform.position, lootItem.transform.position);
                 var viewTransform = new Vector3(
@@ -162,7 +166,7 @@ namespace TarkovHax
                     Camera.main.WorldToScreenPoint(lootItem.transform.position).y, 
                     Camera.main.WorldToScreenPoint(lootItem.transform.position).z);
 
-                if (distanceToObject <= _maxDrawingDistance && viewTransform.z > 0.01f)
+                if (distanceToObject <= _maxDrawingDistance && viewTransform.z > 0.01)
                 {
                     GUI.color = Color.green;
                     GUI.Label(new Rect(viewTransform.x - 50f, (float)Screen.height - viewTransform.y, 100f, 50f), lootItem.name);
@@ -172,7 +176,7 @@ namespace TarkovHax
 
         private void DrawLootableContainers()
         {
-            foreach (LootableContainer lootableContainer in _lootableContainerObjects)
+            foreach (var lootableContainer in _lootableContainers)
             {
                 float distanceToObject = Vector3.Distance(Camera.main.transform.position, lootableContainer.transform.position);
                 var viewTransform = new Vector3(
@@ -180,7 +184,7 @@ namespace TarkovHax
                     Camera.main.WorldToScreenPoint(lootableContainer.transform.position).y, 
                     Camera.main.WorldToScreenPoint(lootableContainer.transform.position).z);
 
-                if (distanceToObject <= _maxDrawingDistance && viewTransform.z > 0.01f)
+                if (distanceToObject <= _maxDrawingDistance && viewTransform.z > 0.01)
                 {
                     GUI.color = Color.cyan;
                     GUI.Label(new Rect(viewTransform.x - 50f, (float)Screen.height - viewTransform.y, 100f, 50f), lootableContainer.name);
@@ -190,7 +194,7 @@ namespace TarkovHax
 
         private void DrawPlayers()
         {
-            foreach (Player player in _playerObjects)
+            foreach (var player in _players)
             {
                 var playerBoundingVector = new Vector3(
                     Camera.main.WorldToScreenPoint(player.Transform.position).x,
@@ -210,12 +214,13 @@ namespace TarkovHax
 
                 if (distanceToObject <= _maxDrawingDistance && playerBoundingVector.z > 0.01)
                 {
-                    var uiColor = player.Profile.Health.IsAlive ? Color.red : Color.white;
-                    GUI.color = uiColor;
+                    var playerColor = player.AIData != null && player.AIData.IsAI ? Color.cyan : Color.red;
+                    var espColor = player.Profile.Health.IsAlive ? playerColor : Color.white;
+                    GUI.color = espColor;
 
-                    GuiHelper.DrawBox(boxXOffset - boxWidth / 2f, (float)Screen.height - boxYOffset, boxWidth, boxHeight, uiColor);
-                    GuiHelper.DrawLine(new Vector2(playerHeadVector.x - 2f, (float)Screen.height - playerHeadVector.y), new Vector2(playerHeadVector.x + 2f, (float)Screen.height - playerHeadVector.y), uiColor);
-                    GuiHelper.DrawLine(new Vector2(playerHeadVector.x, (float)Screen.height - playerHeadVector.y - 2f), new Vector2(playerHeadVector.x, (float)Screen.height - playerHeadVector.y + 2f), uiColor);
+                    GuiHelper.DrawBox(boxXOffset - boxWidth / 2f, (float)Screen.height - boxYOffset, boxWidth, boxHeight, espColor);
+                    GuiHelper.DrawLine(new Vector2(playerHeadVector.x - 2f, (float)Screen.height - playerHeadVector.y), new Vector2(playerHeadVector.x + 2f, (float)Screen.height - playerHeadVector.y), espColor);
+                    GuiHelper.DrawLine(new Vector2(playerHeadVector.x, (float)Screen.height - playerHeadVector.y - 2f), new Vector2(playerHeadVector.x, (float)Screen.height - playerHeadVector.y + 2f), espColor);
 
                     string playerName = player.Profile.Health.IsAlive ? player.Profile.Info.Nickname : player.Profile.Info.Nickname + " (DEAD)";
                     int playerHealth = (int)player.HealthController.SummaryHealth.CurrentValue / 435 * 100;
@@ -225,8 +230,9 @@ namespace TarkovHax
                     var playerTextVector = GUI.skin.GetStyle(playerText).CalcSize(new GUIContent(playerText));
                     GUI.Label(new Rect(playerBoundingVector.x - playerTextVector.x / 2f, (float)Screen.height - boxYOffset - 20f, 300f, 50f), playerText);
 
-                    var weaponTextVector = GUI.skin.GetStyle(player.Weapon.Template.ShortName).CalcSize(new GUIContent(player.Weapon.Template.ShortName));
-                    GUI.Label(new Rect(playerBoundingVector.x - weaponTextVector.x / 2f, (float)Screen.height - playerBoundingVector.y + 2f, 100f, 20f), player.Weapon.Template.ShortName);
+                    //var weaponInfoStyle = GUI.skin.GetStyle(player.Weapon.Template.ShortName);
+                    //var weaponInfoVector = weaponInfoStyle.CalcSize(new GUIContent(player.Weapon.Template.ShortName));
+                    //GUI.Label(new Rect(playerBoundingVector.x - weaponInfoVector.x / 2f, (float)Screen.height - playerBoundingVector.y + 2f, 300f, 20f), player.Weapon.Template.ShortName);
                 }
             }
         }
