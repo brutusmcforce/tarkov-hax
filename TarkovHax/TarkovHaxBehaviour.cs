@@ -12,18 +12,15 @@ namespace TarkovHax
         public GameObject GameObjectHolder;
 
         private IEnumerable<Player> _players;
-        private IEnumerable<LootItem> _lootItems;
         private IEnumerable<LootableContainer> _lootableContainers;
 
         private float _playersNextUpdateTime;
-        private float _lootItemsNextUpdateTime;
-        private float _lootableContainersNextUpdateTime;
+        private float _weaponBoxesNextUpdateTime;
         private float _espUpdateInterval = 1f;
 
         private bool _isESPMenuActive;
         private bool _showPlayersESP;
-        private bool _showLootESP;
-        private bool _showLootableContainersESP;
+        private bool _showWeaponBoxesESP;
 
         private float _maxDrawingDistance = 15000f;
 
@@ -92,7 +89,7 @@ namespace TarkovHax
             }
         }
 
-        private bool _nightVisionOn = false;
+        //private bool _nightVisionOn = false;
         private void ToggleNightVision()
         {
             //var camera = (PlayerCameraController)FindObjectOfType(typeof(PlayerCameraController));
@@ -128,24 +125,13 @@ namespace TarkovHax
                 _playersNextUpdateTime = Time.time + _espUpdateInterval;
             }
 
-            if (_showLootESP && Time.time >= _lootItemsNextUpdateTime)
-            {
-                _lootItems = FindObjectsOfType<LootItem>();
-                _lootItemsNextUpdateTime = Time.time + _espUpdateInterval;
-            }
-
-            if (_showLootableContainersESP && Time.time >= _lootableContainersNextUpdateTime)
+            if (_showWeaponBoxesESP && Time.time >= _weaponBoxesNextUpdateTime)
             {
                 _lootableContainers = FindObjectsOfType<LootableContainer>();
-                _lootableContainersNextUpdateTime = Time.time + _espUpdateInterval;
+                _weaponBoxesNextUpdateTime = Time.time + _espUpdateInterval;
             }
 
-            if (_showLootESP)
-            {
-                DrawLoot();
-            }
-
-            if (_showLootableContainersESP)
+            if (_showWeaponBoxesESP)
             {
                 DrawLootableContainers();
             }
@@ -156,28 +142,13 @@ namespace TarkovHax
             }
         }
 
-        private void DrawLoot()
-        {
-            foreach (var lootItem in _lootItems)
-            {
-                float distanceToObject = Vector3.Distance(Camera.main.transform.position, lootItem.transform.position);
-                var viewTransform = new Vector3(
-                    Camera.main.WorldToScreenPoint(lootItem.transform.position).x, 
-                    Camera.main.WorldToScreenPoint(lootItem.transform.position).y, 
-                    Camera.main.WorldToScreenPoint(lootItem.transform.position).z);
-
-                if (distanceToObject <= _maxDrawingDistance && viewTransform.z > 0.01)
-                {
-                    GUI.color = Color.green;
-                    GUI.Label(new Rect(viewTransform.x - 50f, (float)Screen.height - viewTransform.y, 100f, 50f), lootItem.name);
-                }
-            }
-        }
-
         private void DrawLootableContainers()
         {
             foreach (var lootableContainer in _lootableContainers)
             {
+                if (lootableContainer.name != "weapon_box_cover")
+                    continue;
+
                 float distanceToObject = Vector3.Distance(Camera.main.transform.position, lootableContainer.transform.position);
                 var viewTransform = new Vector3(
                     Camera.main.WorldToScreenPoint(lootableContainer.transform.position).x, 
@@ -187,7 +158,10 @@ namespace TarkovHax
                 if (distanceToObject <= _maxDrawingDistance && viewTransform.z > 0.01)
                 {
                     GUI.color = Color.cyan;
-                    GUI.Label(new Rect(viewTransform.x - 50f, (float)Screen.height - viewTransform.y, 100f, 50f), lootableContainer.name);
+                    int distance = (int)distanceToObject;
+                    string boxText = $"[x] {distance}m";
+
+                    GUI.Label(new Rect(viewTransform.x - 50f, (float)Screen.height - viewTransform.y, 100f, 50f), boxText);
                 }
             }
         }
@@ -223,9 +197,9 @@ namespace TarkovHax
                     GuiHelper.DrawLine(new Vector2(playerHeadVector.x, (float)Screen.height - playerHeadVector.y - 2f), new Vector2(playerHeadVector.x, (float)Screen.height - playerHeadVector.y + 2f), espColor);
 
                     string playerName = player.Profile.Health.IsAlive ? player.Profile.Info.Nickname : player.Profile.Info.Nickname + " (DEAD)";
-                    int playerHealth = (int)player.HealthController.SummaryHealth.CurrentValue / 435 * 100;
+                    float playerHealth = player.HealthController.SummaryHealth.CurrentValue / 435f * 100f;
                     int distance = (int)distanceToObject;
-                    string playerText = $"[{playerHealth}%] {playerName} [{distance}m]";
+                    string playerText = $"[{(int)playerHealth}%] {playerName} [{distance}m]";
 
                     var playerTextVector = GUI.skin.GetStyle(playerText).CalcSize(new GUIContent(playerText));
                     GUI.Label(new Rect(playerBoundingVector.x - playerTextVector.x / 2f, (float)Screen.height - boxYOffset - 20f, 300f, 50f), playerText);
@@ -246,8 +220,7 @@ namespace TarkovHax
             GUI.Label(new Rect(180f, 110f, 50f, 20f), "ESP");
 
             _showPlayersESP = GUI.Toggle(new Rect(110f, 140f, 120f, 20f), _showPlayersESP, "  Players");
-            _showLootESP = GUI.Toggle(new Rect(110f, 160f, 120f, 20f), _showLootESP, "  Loot");
-            _showLootableContainersESP = GUI.Toggle(new Rect(110f, 180f, 120f, 20f), _showLootableContainersESP, "  Lootables");
+            _showWeaponBoxesESP = GUI.Toggle(new Rect(110f, 160f, 120f, 20f), _showWeaponBoxesESP, "  Weapon boxes");
         }
 
         private double GetDistance(double x1, double y1, double x2, double y2)
