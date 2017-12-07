@@ -8,13 +8,14 @@ namespace TarkovHax
     {
         public GameObject GameObjectHolder;
 
-        private float _playerNextUpdateTime;
-        private float _lootNextUpdateTime;
-        private float _lootContainerNextUpdateTime;
-
         private UnityEngine.Object[] _playerObjects;
         private UnityEngine.Object[] _lootableObjects;
         private UnityEngine.Object[] _lootableContainerObjects;
+
+        private float _playerNextUpdateTime;
+        private float _lootNextUpdateTime;
+        private float _lootContainerNextUpdateTime;
+        private float _espUpdateInterval = 1f;
 
         private bool _isESPMenuActive;
         private bool _showPlayersESP;
@@ -120,19 +121,19 @@ namespace TarkovHax
             if (Time.time >= _playerNextUpdateTime)
             {
                 _playerObjects = FindObjectsOfType(typeof(Player));
-                _playerNextUpdateTime = Time.time + 0.5f;
+                _playerNextUpdateTime = Time.time + _espUpdateInterval;
             }
 
             if (_showLootESP && Time.time >= _lootNextUpdateTime)
             {
                 _lootableObjects = FindObjectsOfType(typeof(LootItem));
-                _lootNextUpdateTime = Time.time + 0.01f;
+                _lootNextUpdateTime = Time.time + _espUpdateInterval;
             }
 
             if (_showLootableContainersESP && Time.time >= _lootContainerNextUpdateTime)
             {
                 _lootableContainerObjects = FindObjectsOfType(typeof(LootableContainer));
-                _lootContainerNextUpdateTime = Time.time + 0.01f;
+                _lootContainerNextUpdateTime = Time.time + _espUpdateInterval;
             }
 
             if (_showLootESP)
