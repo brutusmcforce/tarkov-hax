@@ -11,11 +11,9 @@ namespace TarkovHax
     {
         public TarkovHaxBehaviour()
         {
-            _randomizer = new System.Random();
         }
 
-        public GameObject GameObjectHolder;
-        private System.Random _randomizer;
+        private GameObject GameObjectHolder;
 
         private IEnumerable<Player> _players;
         private IEnumerable<LootableContainer> _lootableContainers;
@@ -87,15 +85,14 @@ namespace TarkovHax
         private void OpenDoors()
         {
             var doors = FindObjectsOfType<Door>();
-            foreach (var door in doors)
+            foreach (var door in doors.Where(d => d.DoorState == WorldInteractiveObject.EDoorState.Locked))
             {
-                if (door.DoorState == WorldInteractiveObject.EDoorState.Locked)
-                {
-                    door.DoorState = WorldInteractiveObject.EDoorState.Shut;
-                }
+                door.DoorState = WorldInteractiveObject.EDoorState.Shut;
             }
         }
 
+        // TODO: draw in direction player is looking
+        // TODO: investigate why not all corpses are lootable
         private void TeleportItemsToPlayer()
         {
             var lootItems = FindObjectsOfType<LootItem>();
@@ -104,11 +101,12 @@ namespace TarkovHax
             foreach (var lootItem in lootItems)
             {
                 var newPosition = new Vector3(
-                        Camera.main.transform.position.x + xOffset,
-                        Camera.main.transform.position.y,
-                        Camera.main.transform.position.z + yOffset);
+                    Camera.main.transform.position.x + xOffset,
+                    Camera.main.transform.position.y,
+                    Camera.main.transform.position.z + yOffset);
 
                 lootItem.transform.position = newPosition;
+
                 xOffset += 0.1f;
                 yOffset += 0.1f;
             }
@@ -149,11 +147,8 @@ namespace TarkovHax
 
         private void DrawLootableContainers()
         {
-            foreach (var lootableContainer in _lootableContainers)
+            foreach (var lootableContainer in _lootableContainers.Where(lc => lc.name == "weapon_box_cover"))
             {
-                if (lootableContainer.name != "weapon_box_cover")
-                    continue;
-
                 float distanceToObject = Vector3.Distance(Camera.main.transform.position, lootableContainer.transform.position);
                 var viewTransform = new Vector3(
                     Camera.main.WorldToScreenPoint(lootableContainer.transform.position).x, 
@@ -175,24 +170,24 @@ namespace TarkovHax
         {
             foreach (var player in _players)
             {
+                float distanceToObject = Vector3.Distance(Camera.main.transform.position, player.Transform.position);
                 var playerBoundingVector = new Vector3(
                     Camera.main.WorldToScreenPoint(player.Transform.position).x,
                     Camera.main.WorldToScreenPoint(player.Transform.position).y,
                     Camera.main.WorldToScreenPoint(player.Transform.position).z);
 
-                var playerHeadVector = new Vector3(
-                    Camera.main.WorldToScreenPoint(player.PlayerBones.Head.position).x,
-                    Camera.main.WorldToScreenPoint(player.PlayerBones.Head.position).y,
-                    Camera.main.WorldToScreenPoint(player.PlayerBones.Head.position).z);
-
-                float distanceToObject = Vector3.Distance(Camera.main.transform.position, player.Transform.position);
-                float boxXOffset = Camera.main.WorldToScreenPoint(player.Transform.position).x;
-                float boxYOffset = Camera.main.WorldToScreenPoint(player.PlayerBones.Head.position).y + 10f;
-                float boxHeight = Math.Abs(Camera.main.WorldToScreenPoint(player.PlayerBones.Head.position).y - Camera.main.WorldToScreenPoint(player.Transform.position).y) + 10f;
-                float boxWidth = boxHeight * 0.65f;
-
                 if (distanceToObject <= _maxDrawingDistance && playerBoundingVector.z > 0.01)
-                {
+                { 
+                    var playerHeadVector = new Vector3(
+                        Camera.main.WorldToScreenPoint(player.PlayerBones.Head.position).x,
+                        Camera.main.WorldToScreenPoint(player.PlayerBones.Head.position).y,
+                        Camera.main.WorldToScreenPoint(player.PlayerBones.Head.position).z);
+
+                    float boxXOffset = Camera.main.WorldToScreenPoint(player.Transform.position).x;
+                    float boxYOffset = Camera.main.WorldToScreenPoint(player.PlayerBones.Head.position).y + 10f;
+                    float boxHeight = Math.Abs(Camera.main.WorldToScreenPoint(player.PlayerBones.Head.position).y - Camera.main.WorldToScreenPoint(player.Transform.position).y) + 10f;
+                    float boxWidth = boxHeight * 0.65f;
+
                     var playerColor = player.AIData != null && player.AIData.IsAI ? Color.cyan : Color.red;
                     var espColor = player.Profile.Health.IsAlive ? playerColor : Color.white;
                     GUI.color = espColor;
@@ -208,10 +203,6 @@ namespace TarkovHax
 
                     var playerTextVector = GUI.skin.GetStyle(playerText).CalcSize(new GUIContent(playerText));
                     GUI.Label(new Rect(playerBoundingVector.x - playerTextVector.x / 2f, (float)Screen.height - boxYOffset - 20f, 300f, 50f), playerText);
-
-                    //var weaponInfoStyle = GUI.skin.GetStyle(player.Weapon.Template.ShortName);
-                    //var weaponInfoVector = weaponInfoStyle.CalcSize(new GUIContent(player.Weapon.Template.ShortName));
-                    //GUI.Label(new Rect(playerBoundingVector.x - weaponInfoVector.x / 2f, (float)Screen.height - playerBoundingVector.y + 2f, 300f, 20f), player.Weapon.Template.ShortName);
                 }
             }
         }
