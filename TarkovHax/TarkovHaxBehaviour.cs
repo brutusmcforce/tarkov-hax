@@ -9,7 +9,13 @@ namespace TarkovHax
 {
     public class TarkovHaxBehaviour : MonoBehaviour
     {
+        public TarkovHaxBehaviour()
+        {
+            _randomizer = new System.Random();
+        }
+
         public GameObject GameObjectHolder;
+        private System.Random _randomizer;
 
         private IEnumerable<Player> _players;
         private IEnumerable<LootableContainer> _lootableContainers;
@@ -23,6 +29,8 @@ namespace TarkovHax
         private bool _showWeaponBoxesESP;
 
         private float _maxDrawingDistance = 15000f;
+
+        private string _magicAppDomainString = "mvhYQbbHjrHM";
 
         public void Load()
         {
@@ -54,7 +62,7 @@ namespace TarkovHax
             }
             if (Input.GetKeyDown(KeyCode.Keypad1))
             {
-                ToggleNightVision();
+                TeleportItemsToPlayer();
             }
             if (Input.GetKeyDown(KeyCode.KeypadPlus))
             {
@@ -76,7 +84,6 @@ namespace TarkovHax
             Camera.main.fieldOfView -= 1f;
         }
 
-
         private void OpenDoors()
         {
             var doors = FindObjectsOfType<Door>();
@@ -89,24 +96,22 @@ namespace TarkovHax
             }
         }
 
-        //private bool _nightVisionOn = false;
-        private void ToggleNightVision()
+        private void TeleportItemsToPlayer()
         {
-            //var camera = (PlayerCameraController)FindObjectOfType(typeof(PlayerCameraController));
-            //if (_nightVisionOn)
-            //{
-            //    var component = camera.gameObject.AddComponent<NightVision>();
-            //    if (component != null)
-            //    {
-            //        DestroyImmediate(component);
-            //    }
-            //}
-            //else
-            //{
-            //    camera.gameObject.AddComponent<NightVision>();
-            //}
+            var lootItems = FindObjectsOfType<LootItem>();
+            float xOffset = 0f;
+            float yOffset = 0f;
+            foreach (var lootItem in lootItems)
+            {
+                var newPosition = new Vector3(
+                        Camera.main.transform.position.x + xOffset,
+                        Camera.main.transform.position.y,
+                        Camera.main.transform.position.z + yOffset);
 
-            //_nightVisionOn = !_nightVisionOn;
+                lootItem.transform.position = newPosition;
+                xOffset += 0.1f;
+                yOffset += 0.1f;
+            }
         }
 
         private void OnGUI()
@@ -117,7 +122,7 @@ namespace TarkovHax
             }
 
             GUI.color = Color.red;
-            GUI.Label(new Rect(10f, 10f, 100f, 50f), "tarkov h4x");
+            GUI.Label(new Rect(10f, 10f, 1000f, 500f), "tarkov h4x");
 
             if (_showPlayersESP && Time.time >= _playersNextUpdateTime)
             {
