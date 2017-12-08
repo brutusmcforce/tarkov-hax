@@ -62,6 +62,10 @@ namespace TarkovHax
             {
                 TeleportItemsToPlayer();
             }
+            if (Input.GetKeyDown(KeyCode.Keypad2))
+            {
+                ToggleNightVision();
+            }
             if (Input.GetKeyDown(KeyCode.KeypadPlus))
             {
                 IncreaseFov();
@@ -110,6 +114,24 @@ namespace TarkovHax
                 xOffset += 0.1f;
                 yOffset += 0.1f;
             }
+        }
+        
+        // does not work
+        private bool _nightVisionOn = false;
+        private void ToggleNightVision()
+        {
+            //var pc = FindObjectOfType<PlayerCameraController>();
+            //var nv = pc.Camera.gameObject.GetComponent<NightVision>();
+
+            //if (nv == null)
+            //{
+            //    pc.Camera.gameObject.AddComponent<NightVision>();
+            //}
+
+            //nv._on = !nv._on;
+            //nv.enabled = nv._on;
+            
+            //PlayerCameraController.OnPlayerCameraControllerCreated(pc, pc.Camera);
         }
 
         private void OnGUI()
@@ -188,18 +210,19 @@ namespace TarkovHax
                     float boxHeight = Math.Abs(Camera.main.WorldToScreenPoint(player.PlayerBones.Head.position).y - Camera.main.WorldToScreenPoint(player.Transform.position).y) + 10f;
                     float boxWidth = boxHeight * 0.65f;
 
-                    var playerColor = player.AIData != null && player.AIData.IsAI ? Color.cyan : Color.red;
+                    var isBot = player.Profile.Info.Nickname.Contains(" ");
+                    var playerColor = isBot ? Color.cyan : Color.red;
                     var espColor = player.Profile.Health.IsAlive ? playerColor : Color.white;
-                    GUI.color = espColor;
 
+                    GUI.color = espColor;
                     GuiHelper.DrawBox(boxXOffset - boxWidth / 2f, (float)Screen.height - boxYOffset, boxWidth, boxHeight, espColor);
                     GuiHelper.DrawLine(new Vector2(playerHeadVector.x - 2f, (float)Screen.height - playerHeadVector.y), new Vector2(playerHeadVector.x + 2f, (float)Screen.height - playerHeadVector.y), espColor);
                     GuiHelper.DrawLine(new Vector2(playerHeadVector.x, (float)Screen.height - playerHeadVector.y - 2f), new Vector2(playerHeadVector.x, (float)Screen.height - playerHeadVector.y + 2f), espColor);
 
-                    string playerName = player.Profile.Health.IsAlive ? player.Profile.Info.Nickname : player.Profile.Info.Nickname + " (DEAD)";
+                    var playerName = isBot ? "SCAV" : player.Profile.Info.Nickname;
                     float playerHealth = player.HealthController.SummaryHealth.CurrentValue / 435f * 100f;
-                    int distance = (int)distanceToObject;
-                    string playerText = $"[{(int)playerHealth}%] {playerName} [{distance}m]";
+                    string playerDisplayName = player.Profile.Health.IsAlive ? playerName : playerName + " (DEAD)";
+                    string playerText = $"[{(int)playerHealth}%] {playerDisplayName} [{(int)distanceToObject}m]";
 
                     var playerTextVector = GUI.skin.GetStyle(playerText).CalcSize(new GUIContent(playerText));
                     GUI.Label(new Rect(playerBoundingVector.x - playerTextVector.x / 2f, (float)Screen.height - boxYOffset - 20f, 300f, 50f), playerText);
